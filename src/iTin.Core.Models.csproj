@@ -41,9 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\iTin.Core.Drawing\src\iTin.Core.Drawing.csproj" />
-    <ProjectReference Include="..\..\..\iTin.Core.IO\src\iTin.Core.IO.csproj" />
-    <ProjectReference Include="..\..\..\iTin.Core\src\iTin.Core.csproj" />
+    <ProjectReference Include="..\..\iTin.Core.Drawing\src\iTin.Core.Drawing.csproj" />
+    <ProjectReference Include="..\..\iTin.Core.IO\src\iTin.Core.IO.csproj" />
+    <ProjectReference Include="..\..\iTin.Core\src\iTin.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
