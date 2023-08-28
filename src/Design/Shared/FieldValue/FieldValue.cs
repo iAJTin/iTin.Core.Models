@@ -1,11 +1,18 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
 
 using iTin.Core.Helpers;
+
 using iTin.Core.Models.ComponentModel.Exceptions;
+using iTin.Core.Models.Data.Provider;
+using iTin.Core.Models.Design.Constants;
 using iTin.Core.Models.Design.Enums;
 using iTin.Core.Models.Design.Table.Fields;
 using iTin.Core.Models.Helpers;
@@ -185,6 +192,215 @@ public partial class FieldValue
 
     #endregion
 
+    #region public methods
+
+    /// <summary>
+    /// Gets the value.
+    /// </summary>
+    /// <param name="specialChars">The special chars.</param>
+    /// <returns>
+    /// The value
+    /// </returns>
+    public string GetRawValue(IEnumerable<char> specialChars = null)
+    {
+        var unformattedValue = string.Empty;
+
+        var specialCharsList = new List<char>();
+        if (specialChars != null)
+        {
+            specialCharsList = specialChars.ToList();
+        }
+
+        if (Show == YesNo.No)
+        {
+            return unformattedValue;
+        }
+
+        if (Parent.DataSource == null)
+        {
+            return unformattedValue;
+        }
+
+        var fieldType = Parent.FieldType;
+        switch (fieldType)
+        {
+            #region Field: Data
+            case KnownFieldType.Field:
+                {
+                    var current = (DataField)Parent;
+                    var parsedName = BaseDataProvider.Parse(current.Name, specialCharsList);
+
+                    var fieldAsAttribute = Parent.DataSource.Attribute(parsedName);
+                    if (fieldAsAttribute == null)
+                    {
+                        fieldAsAttribute = Parent.DataSource.Attribute(parsedName.ToUpperInvariant());
+                        if (fieldAsAttribute == null)
+                        {
+                            fieldAsAttribute = Parent.DataSource.Attribute(parsedName.ToLowerInvariant());
+                        }
+                    }
+
+                    if (fieldAsAttribute != null)
+                    {
+                        unformattedValue = fieldAsAttribute.Value;
+                    }
+                }
+
+                break;
+            #endregion
+
+            #region Field: Fixed
+            //case KnownFieldType.Fixed:
+            //    {
+            //        var current = (FixedField)Parent;
+
+            //        var @fixed = Parent.Owner.Parent.Parent.Resources.Fixed;
+            //        var fixedItem = @fixed[current.Pieces];
+            //        fixedItem.DataSource = Parent.DataSource;
+
+            //        var parsedName = current.Piece; //BaseProvider.Parse(current.Piece, specialCharsList);
+            //        var piece = fixedItem.Pieces[parsedName];
+            //        unformattedValue = piece.GetValue();
+            //    }
+
+                break;
+            #endregion
+
+            #region Field: Group
+            //case KnownFieldType.Group:
+            //    {
+            //        var current = (GroupField)Parent;
+            //        var currentName = current.Name;
+
+            //        var @fixed = Parent.Owner.Parent.Parent.Owner.Resources.Fixed;
+            //        var groups = Parent.Owner.Parent.Parent.Owner.Resources.Groups;
+            //        var groupValue = string.Empty;
+            //        var builder = new StringBuilder();
+
+            //        var group = groups[currentName];
+            //        var groupFields = group.Fields;
+            //        foreach (var groupField in groupFields)
+            //        {
+            //            var parsedName = groupField.Name; //BaseProvider.Parse(groupField.Name, specialCharsList);
+            //            var asAttribute = Parent.DataSource.Attribute(parsedName);
+            //            if (asAttribute == null)
+            //            {
+            //                foreach (var fixedwidth in @fixed)
+            //                {
+            //                    fixedwidth.DataSource = Parent.DataSource;
+
+            //                    var piece = fixedwidth.Pieces[groupField.Name];
+            //                    if (piece == null)
+            //                    {
+            //                        continue;
+            //                    }
+
+            //                    groupValue = piece.GetValue();
+            //                }
+            //            }
+            //            else
+            //            {
+            //                groupField.DataSource = Parent.DataSource;
+            //                groupValue = groupField.GetValue(); //asAttribute.Value;
+            //            }
+
+            //            builder.Append(groupValue);
+            //            builder.Append(GroupField.GetSeparatorChar(groupField.Separator));
+            //        }
+
+            //        unformattedValue = builder.ToString();
+            //    }
+
+            //    break;
+            #endregion
+
+            #region Field: Packet
+            case KnownFieldType.Packet:
+                {
+                    var current = (PacketField)Parent;
+                    var parsedName = BaseDataProvider.Parse(current.Name, specialCharsList);
+
+                    var fieldAsAttribute = Parent.DataSource.Attribute(parsedName);
+                    if (fieldAsAttribute != null)
+                    {
+                        var builder = new StringBuilder();
+                        builder.Clear();
+
+                        var inputFormat = current.InputFormat;
+                        var fieldvalue = fieldAsAttribute.Value;
+                        switch (inputFormat)
+                        {
+                            #region InputFormat: FullDateFormat
+                            case KnownInputPacketFormat.FullDateFormat:
+                                if (!string.IsNullOrEmpty(fieldvalue) &&
+                                    !fieldvalue.Trim().Equals("0"))
+                                {
+                                    var adjustedValue = string.Concat(new string('0', 14), fieldvalue);
+                                    adjustedValue = adjustedValue.Substring(adjustedValue.Length - 14, 14);
+
+                                    builder.Append(adjustedValue.Substring(6, 2));
+                                    builder.Append('/');
+                                    builder.Append(adjustedValue.Substring(4, 2));
+                                    builder.Append('/');
+                                    builder.Append(adjustedValue.Substring(0, 4));
+                                    builder.Append(' ');
+                                    builder.Append(adjustedValue.Substring(8, 2));
+                                    builder.Append(':');
+                                    builder.Append(adjustedValue.Substring(10, 2));
+                                    builder.Append(':');
+                                    builder.Append(adjustedValue.Substring(12, 2));
+                                }
+                                break;
+                            #endregion
+
+                            #region InputFormat: LongDateFormat
+                            case KnownInputPacketFormat.LongDateFormat:
+                                if (!string.IsNullOrEmpty(fieldvalue) &&
+                                    !fieldvalue.Trim().Equals("0"))
+                                {
+                                    var adjustedValue = string.Concat(new string('0', 8), fieldvalue);
+                                    adjustedValue = adjustedValue.Substring(adjustedValue.Length - 8, 8);
+
+                                    builder.Append(adjustedValue.Substring(0, 4));
+                                    builder.Append('/');
+                                    builder.Append(adjustedValue.Substring(4, 2));
+                                    builder.Append('/');
+                                    builder.Append(adjustedValue.Substring(6, 2));
+                                }
+                                break;
+                            #endregion
+
+                            #region InputFormat: ShortDateFormat
+                            case KnownInputPacketFormat.ShortDateFormat:
+                                if (!string.IsNullOrEmpty(fieldvalue) &&
+                                    !fieldvalue.Trim().Equals("0"))
+                                {
+                                    var adjustedValue = string.Concat(new string('0', 6), fieldvalue);
+                                    adjustedValue = adjustedValue.Substring(adjustedValue.Length - 6, 6);
+
+                                    builder.Append(adjustedValue.Substring(0, 2));
+                                    builder.Append('/');
+                                    builder.Append(adjustedValue.Substring(2, 2));
+                                    builder.Append('/');
+                                    builder.Append(adjustedValue.Substring(4, 2));
+                                }
+                                break;
+                                #endregion
+                        }
+
+                        unformattedValue = builder.ToString();
+                    }
+                }
+
+                break;
+                #endregion
+        }
+
+        return unformattedValue;
+    }
+
+    #endregion
+
     #region internal methods
 
     /// <summary>
@@ -197,305 +413,44 @@ public partial class FieldValue
     }
 
     #endregion
+
+    /// <summary>
+    /// Parse an <see cref="T:System.String" /> and replace the special chars defined in <paramref name="specialChars"/> by a hexadecimal pattern.
+    /// </summary>
+    /// <param name="value"><see cref="T:System.String" /> to parse</param>
+    /// <param name="specialChars">Special chars to replace</param>
+    /// <returns>
+    /// The parsed string.
+    /// </returns>
+    /// <remarks>
+    /// Analyzes the argument <paramref name="value"/>, replacing <paramref name="specialChars"/> by the pattern '_x####_', where:
+    /// ####: Represents ASCII char code in Hexadecimal format
+    /// If the argument <paramref name="value"/> does not contain any special characters returns the argument unchanged.
+    /// </remarks>
+    public static string ParseFieldName(string value, IEnumerable<char> specialChars)
+    {
+        SentinelHelper.ArgumentNull(value, nameof(value));
+
+        if (specialChars == null)
+        {
+            return value;
+        }
+
+        var parsedField = value;
+        var chars = specialChars.ToList();
+        foreach (var specialchar in chars)
+        {
+            if (!value.StartsWith(specialchar.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var charAsString = specialchar.ToString(CultureInfo.InvariantCulture);
+            var asciicode = Encoding.ASCII.GetBytes(charAsString)[0];
+            var cleanedfield = value.Replace(charAsString, string.Empty);
+            parsedField = $"_x{asciicode.ToString("x4", CultureInfo.InvariantCulture).ToUpper(CultureInfo.InvariantCulture)}_{cleanedfield}";
+        }
+
+        return parsedField;
+    }
 }
-
-//#region public methods
-
-///// <summary>
-///// Performs a test for check if there this name of the style into the user-defined styles list.
-///// </summary>
-///// <returns>
-///// <strong>true</strong> if exist; otherwise, <strong>false</strong>.
-///// </returns>
-//public bool CheckStyleName() => 
-//    Style.Equals("Default") || 
-//    Parent.Owner.Parent.Parent.Owner.Resources.Styles.Contains(Style);
-
-///// <summary>
-///// Gets the value.
-///// </summary>
-///// <returns>
-///// The value
-///// </returns>
-//public FieldValueInformation GetValue() => GetValue(null);
-
-///// <summary>
-///// Gets the value.
-///// </summary>
-///// <param name="specialChars">The special chars.</param>
-///// <returns>
-///// The value
-///// </returns>
-//public FieldValueInformation GetValue(IEnumerable<char> specialChars)
-//{
-//    //// return FieldValueInformationCache.Cache.Get(Parent, specialChars);
-
-//    var value = FieldValueInformation.Default;
-//    var unformattedValue = string.Empty;
-
-//    var specialCharsList = new List<char>();
-//    if (specialChars != null)
-//    {
-//        specialCharsList = specialChars.ToList();
-//    }
-
-//    if (Show == YesNo.No)
-//    {
-//        return value;
-//    }
-
-//    var found = Parent.Value.TryGetStyle(out var style);
-//    if (!found)
-//    {
-//        // Mensaje de Log usando default style; 
-//        style = StyleModel.Default;
-//    }
-
-//    value.Style = style;
-
-//    if (Parent.DataSource == null)
-//    {
-//        return value;
-//    }
-
-//    var fieldType = Parent.FieldType;
-//    switch (fieldType)
-//    {
-//        #region Field: Data
-//        case KnownFieldType.Field:
-//        {
-//            var current = (DataField)Parent;
-//            var parsedName = BaseProvider.Parse(current.Name, specialCharsList);
-
-//            var fieldAsAttribute = Parent.DataSource.Attribute(parsedName);
-//            if (fieldAsAttribute == null)
-//            {
-//                fieldAsAttribute = Parent.DataSource.Attribute(parsedName.ToUpperInvariant());
-//                if (fieldAsAttribute == null)
-//                {
-//                    fieldAsAttribute = Parent.DataSource.Attribute(parsedName.ToLowerInvariant());
-//                }                                
-//            }
-
-//            if (fieldAsAttribute != null)
-//            {
-//                unformattedValue = fieldAsAttribute.Value;
-//            }
-//        }
-
-//            break;
-//        #endregion
-
-//        #region Field: Fixed
-//        case KnownFieldType.Fixed:
-//        {
-//            var current = (FixedField)Parent;
-
-//            var @fixed = Parent.Owner.Parent.Parent.Resources.Fixed;
-//            var fixedItem = @fixed[current.Pieces];
-//            fixedItem.DataSource = Parent.DataSource;
-
-//            var parsedName = BaseProvider.Parse(current.Piece, specialCharsList);
-//            var piece = fixedItem.Pieces[parsedName];
-//            unformattedValue = piece.GetValue();
-//        }
-
-//            break;
-//        #endregion
-
-//        #region Field: Group
-//        case KnownFieldType.Group:
-//        {
-//            var current = (GroupField)Parent;
-//            var currentName = current.Name;
-
-//            var @fixed = Parent.Owner.Parent.Parent.Owner.Resources.Fixed;
-//            var groups = Parent.Owner.Parent.Parent.Owner.Resources.Groups;
-//            var groupValue = string.Empty;
-//            var builder = new StringBuilder();
-
-//            var group = groups[currentName];
-//            var groupFields = group.Fields;
-//            foreach (var groupField in groupFields)
-//            {
-//                var parsedName = BaseProvider.Parse(groupField.Name, specialCharsList);
-//                var asAttribute = Parent.DataSource.Attribute(parsedName);
-//                if (asAttribute == null)
-//                {
-//                    foreach (var fixedwidth in @fixed)
-//                    {
-//                        fixedwidth.DataSource = Parent.DataSource;
-
-//                        var piece = fixedwidth.Pieces[groupField.Name];
-//                        if (piece == null)
-//                        {
-//                            continue;
-//                        }
-
-//                        groupValue = piece.GetValue();
-//                    }
-//                }
-//                else
-//                {
-//                    groupField.DataSource = Parent.DataSource;
-//                    groupValue = groupField.GetValue(); //asAttribute.Value;
-//                }
-
-//                builder.Append(groupValue);
-//                builder.Append(GroupField.GetSeparatorChar(groupField.Separator));
-//            }
-
-//            unformattedValue = builder.ToString();
-//        }
-
-//            break;
-//        #endregion
-
-//        #region Field: Packet
-//        case KnownFieldType.Packet:
-//        {
-//            var current = (PacketField)Parent;
-//            var parsedName = BaseProvider.Parse(current.Name, specialCharsList);
-
-//            var fieldAsAttribute = Parent.DataSource.Attribute(parsedName);
-//            if (fieldAsAttribute != null)
-//            {
-//                var builder = new StringBuilder();
-//                builder.Clear();
-
-//                var inputFormat = current.InputFormat;
-//                var fieldvalue = fieldAsAttribute.Value;
-//                switch (inputFormat)
-//                {
-//                    #region InputFormat: FullDateFormat
-//                    case KnownInputPacketFormat.FullDateFormat:
-//                        if (!string.IsNullOrEmpty(fieldvalue) &&
-//                            !fieldvalue.Trim().Equals("0"))
-//                        {
-//                            var adjustedValue = string.Concat(new string('0', 14), fieldvalue);
-//                            adjustedValue = adjustedValue.Substring(adjustedValue.Length - 14, 14);
-
-//                            builder.Append(adjustedValue.Substring(6, 2));
-//                            builder.Append('/');
-//                            builder.Append(adjustedValue.Substring(4, 2));
-//                            builder.Append('/');
-//                            builder.Append(adjustedValue.Substring(0, 4));
-//                            builder.Append(' ');
-//                            builder.Append(adjustedValue.Substring(8, 2));
-//                            builder.Append(':');
-//                            builder.Append(adjustedValue.Substring(10, 2));
-//                            builder.Append(':');
-//                            builder.Append(adjustedValue.Substring(12, 2));
-//                        }
-//                        break;
-//                    #endregion
-
-//                    #region InputFormat: LongDateFormat
-//                    case KnownInputPacketFormat.LongDateFormat:
-//                        if (!string.IsNullOrEmpty(fieldvalue) &&
-//                            !fieldvalue.Trim().Equals("0"))
-//                        {
-//                            var adjustedValue = string.Concat(new string('0', 8), fieldvalue);
-//                            adjustedValue = adjustedValue.Substring(adjustedValue.Length - 8, 8);
-
-//                            builder.Append(adjustedValue.Substring(0, 4));
-//                            builder.Append('/');
-//                            builder.Append(adjustedValue.Substring(4, 2));
-//                            builder.Append('/');
-//                            builder.Append(adjustedValue.Substring(6, 2));
-//                        }
-//                        break;
-//                    #endregion
-
-//                    #region InputFormat: ShortDateFormat
-//                    case KnownInputPacketFormat.ShortDateFormat:
-//                        if (!string.IsNullOrEmpty(fieldvalue) &&
-//                            !fieldvalue.Trim().Equals("0"))
-//                        {
-//                            var adjustedValue = string.Concat(new string('0', 6), fieldvalue);
-//                            adjustedValue = adjustedValue.Substring(adjustedValue.Length - 6, 6);
-
-//                            builder.Append(adjustedValue.Substring(0, 2));
-//                            builder.Append('/');
-//                            builder.Append(adjustedValue.Substring(2, 2));
-//                            builder.Append('/');
-//                            builder.Append(adjustedValue.Substring(4, 2));
-//                        }
-//                        break;
-//                    #endregion
-//                }
-
-//                unformattedValue = builder.ToString();
-//            }
-//        }
-
-//            break;
-//        #endregion
-//    }
-
-//    return style.Content.DataType.GetFormattedDataValue(unformattedValue);
-//}
-
-//#endregion
-
-
-///// <summary>
-///// Gets a reference to the <see cref="T:iTin.Export.Model.StyleModel" /> from global resources.
-///// </summary>
-///// <param name="style">A <see cref="T:iTin.Export.Model.StyleModel" /> resource.</param>
-///// <returns>
-///// <strong>true</strong> if returns the style from resource; otherwise, <strong>false</strong>.
-///// </returns>
-//public bool TryGetStyle(out StyleModel style)
-//{
-//    style = StyleModel.Empty;
-
-//    var found = TryGetResourceInformation(out var resource);
-//    if (!found)
-//    {
-//        return false;
-//    }
-
-//    style = resource;
-
-//    return true;
-//}
-
-//#region private methods
-
-///// <summary>
-///// Gets a reference to the image resource information.
-///// </summary>
-///// <param name="resource">Resource information.</param>
-///// <returns>
-///// <strong>true</strong> if exist available information about resource; otherwise, <strong>false</strong>.
-///// </returns>
-//private bool TryGetResourceInformation(out StyleModel resource)
-//{
-//    bool result;
-
-//    resource = StyleModel.Empty;
-//    if (string.IsNullOrEmpty(Style))
-//    {
-//        return false;
-//    }
-
-//    try
-//    {
-//        var field = Parent;
-//        var fields = field.Owner;
-//        var table = fields.Parent;
-//        var export = table.Parent;
-//        resource = export.Resources.GetStyleResourceByName(Style);
-
-//        result = resource != null;
-//    }
-//    catch
-//    {
-//        result = false;
-//    }
-
-//    return result;
-//}
-
-//#endregion

@@ -112,6 +112,14 @@ public class FieldValueInformation
     /// </value>
     public Comment Comment { get; set; }
 
+    /// <summary>
+    /// Gets or sets 
+    /// </summary>
+    /// <value>
+    /// The style.
+    /// </value>
+    public IStyle Style { get; set; }
+
     #endregion
 
     #region public override methods
