@@ -8,32 +8,34 @@ using iTin.Core.Helpers;
 using iTin.Core.Models.Collections;
 using iTin.Core.Models.Design.Enums;
 
-namespace iTin.Core.Models.Design
+namespace iTin.Core.Models.Design;
+
+[Serializable]
+//[DebuggerStepThrough]
+[DesignerCategory("code")]
+[XmlType(Namespace = "http://schemas.itin.com/models/core/v1.0")]
+public partial class BordersCollection : BaseComplexModelCollection<IBorder, IParent, KnownBorderPosition>
 {
-    [Serializable]
-    //[DebuggerStepThrough]
-    [DesignerCategory("code")]
-    [XmlType(Namespace = "http://schemas.iTin.com/style/v1.0")]
-    public partial class BordersCollection : BaseComplexModelCollection<IBorder, IParent, KnownBorderPosition>
+    /// <summary>
+    /// Gets a <see cref="IBorder"/> by its value.
+    /// </summary>
+    /// <param name="value">The value to search for.</param>
+    /// <returns>
+    /// The <see cref="IBorder"/> if found; otherwise, <see langword="null"/>.
+    /// </returns>
+    public override IBorder GetBy(KnownBorderPosition value) => Find(border => border.Position == value);
+
+    /// <summary>
+    /// Sets the owner of the provided <paramref name="item"/> to this <see cref="BordersCollection"/> instance.
+    /// </summary>
+    /// <param name="item">The <see cref="IBorder"/> for which to set the owner.</param>
+    /// <remarks>
+    /// This method assigns this <see cref="BordersCollection"/> instance as the owner of the specified <paramref name="item"/>, establishing a parent-child relationship between them.
+    /// </remarks>
+    protected override void SetOwner(IBorder item)
     {
-        /// <summary>
-        /// Returns the element specified.
-        /// </summary>
-        /// <param name="value">The object to locate in the <see cref="BaseComplexModelCollection{TItem, TParent, TSearch}"/>.</param>
-        /// <returns>
-        /// Returns the specified element.
-        /// </returns>
-        public override IBorder GetBy(KnownBorderPosition value) => Find(border => border.Position == value);
+        SentinelHelper.ArgumentNull(item, nameof(item));
 
-        /// <summary>
-        /// Sets this collection as the owner of the specified item.
-        /// </summary>
-        /// <param name="item">Target item to set owner.</param>
-        protected override void SetOwner(IBorder item)
-        {
-            SentinelHelper.ArgumentNull(item, nameof(item));
-
-            item.SetOwner(this);
-        }
+        item.SetOwner(this);
     }
 }

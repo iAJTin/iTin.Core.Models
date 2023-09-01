@@ -68,7 +68,7 @@ public partial class PacketField
                 new InvalidFieldIdentifierNameException(
                     ErrorMessageHelper.FieldIdentifierNameErrorMessage(
                         "Field", 
-                        "Name", 
+                        nameof(Name), 
                         value)));
 
             _name = value;

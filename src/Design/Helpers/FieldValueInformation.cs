@@ -1,5 +1,6 @@
 
 using System.Drawing;
+using iTin.Core.Models.Design.Styles;
 
 namespace iTin.Core.Models.Design.ComponentModel;
 
@@ -23,6 +24,7 @@ public class FieldValueInformation
         IsNegative = false,
         IsErrorValue = false,
         Value = string.Empty,
+        Style = BaseStyle.Default,
         Format = "@",
         NegativeColor = Color.Empty,
         FormattedValue = string.Empty,
@@ -130,7 +132,7 @@ public class FieldValueInformation
     /// <returns>
     /// A <see cref="string"/> that represents this instance.
     /// </returns>
-    public override string ToString() => $"Value=\"{Value}\", Format=\"{Format}\"";
+    public override string ToString() => $"Value=\"{Value}\", Style=\"{Style.Name}\", Format=\"{Format}\"";
 
     #endregion
 }

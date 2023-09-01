@@ -41,5 +41,10 @@ public enum KnownAggregateType
     /// <summary>
     /// Sum aggregate
     /// </summary>
-    Sum
+    Sum,
+
+    /// <summary>
+    /// Custom text
+    /// </summary>
+    Text
 }

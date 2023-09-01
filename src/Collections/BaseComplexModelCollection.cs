@@ -5,10 +5,9 @@ using Newtonsoft.Json;
 
 namespace iTin.Core.Models.Collections;
 
-/// <inheritdoc/>
 /// <summary>
 /// A Specialization of <see cref="BaseSimpleModelCollection{TItem, TParent}"/> class.<br/>.
-/// Which acts as the base class for nodes of model which are of collection type
+/// Which acts as the base class for nodes of model which are of collection type.
 /// </summary>
 /// <typeparam name="TItem">The type of elements in the list.</typeparam>
 /// <typeparam name="TParent">The owner type of list.</typeparam>
@@ -19,7 +18,6 @@ public abstract class BaseComplexModelCollection<TItem, TParent, TSearch> : Base
 {
     #region constructor/s
 
-    /// <inheritdoc />
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseComplexModelCollection{TItem, TParent, TSearch}"/> class.
     /// </summary>
@@ -62,11 +60,11 @@ public abstract class BaseComplexModelCollection<TItem, TParent, TSearch> : Base
     #region public abstract methods
 
     /// <summary>
-    /// Returns the element specified.
+    /// Gets an item of type <typeparamref name="TItem"/> by its search value.
     /// </summary>
-    /// <param name="value">The object to locate in the <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.</param>
+    /// <param name="value">The search value to look for.</param>
     /// <returns>
-    /// Returns the specified element.
+    /// The item of type <typeparamref name="TItem"/> if found; otherwise, <see langword="null"/>.
     /// </returns>
     public abstract TItem GetBy(TSearch value);
 

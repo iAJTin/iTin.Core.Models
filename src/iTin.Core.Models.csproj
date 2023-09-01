@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard2.1;</TargetFrameworks>
+		<TargetFramework>netstandard2.0</TargetFramework>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -21,17 +21,22 @@
 	  <Compile Remove="Design\Shared\Content\DataContent\**" />
 	  <Compile Remove="Design\Shared\Styles\Style\Borders\**" />
 	  <Compile Remove="Design\Shared\Styles\Style\Content\**" />
+	  <Compile Remove="Design\Shared\Table\Resources\Conditions\**" />
 	  <EmbeddedResource Remove="Design\Shared\Alignment\**" />
 	  <EmbeddedResource Remove="Design\Shared\Content\DataContent\**" />
 	  <EmbeddedResource Remove="Design\Shared\Styles\Style\Borders\**" />
 	  <EmbeddedResource Remove="Design\Shared\Styles\Style\Content\**" />
+	  <EmbeddedResource Remove="Design\Shared\Table\Resources\Conditions\**" />
 	  <None Remove="Design\Shared\Alignment\**" />
 	  <None Remove="Design\Shared\Content\DataContent\**" />
 	  <None Remove="Design\Shared\Styles\Style\Borders\**" />
 	  <None Remove="Design\Shared\Styles\Style\Content\**" />
+	  <None Remove="Design\Shared\Table\Resources\Conditions\**" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Design\Shared\Table\Resources\Fixed\Pieces\Piece\PiecesCollection.cs" />
+	  <Compile Remove="Design\Shared\Table\Resources\Fixed\Pieces\Piece\PiecesCollection.designer.cs" />
 	  <Compile Remove="Helpers\ColorHelper.cs" />
 	</ItemGroup>
 
@@ -43,7 +48,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\iTin.Core.Drawing\src\iTin.Core.Drawing.csproj" />
     <ProjectReference Include="..\..\iTin.Core.IO\src\iTin.Core.IO.csproj" />
-    <ProjectReference Include="..\..\iTin.Core.Models.Data\src\iTin.Core.Models.Data.csproj" />
     <ProjectReference Include="..\..\iTin.Core\src\iTin.Core.csproj" />
   </ItemGroup>
 
@@ -252,28 +256,31 @@
 	  <Compile Update="Design\Shared\Borders\Border\BaseBorder.tenant.cs">
 	    <DependentUpon>BaseBorder.cs</DependentUpon>
 	  </Compile>
-	  <Compile Update="Design\Shared\Filters\FiltersCollection.clone.cs">
-	    <DependentUpon>Filter.cs</DependentUpon>
-	  </Compile>
-	  <Compile Update="Design\Shared\Filters\FiltersCollection.designer.cs">
-	    <DependentUpon>Filter.cs</DependentUpon>
-	  </Compile>
-	  <Compile Update="Design\Shared\Filters\Filter\Filter.*.cs">
-	    <DependentUpon>Filter.cs</DependentUpon>
-	  </Compile>
-	  <Compile Update="Design\Shared\Filters\Filters.*.cs">
-	    <DependentUpon>Filters.cs</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Design\Shared\Filters\FiltersCollection.*.cs">
+    <Compile Update="Design\Shared\Table\References\Reference\Reference.*.cs">
+      <DependentUpon>Reference.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Design\Shared\Table\References\ReferencesCollection.*.cs">
+      <DependentUpon>ReferencesCollection.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Design\Shared\Table\Resources\Filters\FiltersCollection.*.cs">
       <DependentUpon>FiltersCollection.cs</DependentUpon>
     </Compile>
-    <Compile Update="Design\Shared\Filters\Filter\BaseFilter.*.cs">
-      <DependentUpon>BaseFilter.cs</DependentUpon>
+    <Compile Update="Design\Shared\Table\Resources\Filters\Filter\Filter.*.cs">
+      <DependentUpon>Filter.cs</DependentUpon>
     </Compile>
-  </ItemGroup>
+    <Compile Update="Design\Shared\Table\Resources\Groups\Group\Group.*.cs">
+      <DependentUpon>Group.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Design\Shared\Table\Resources\Groups\Group\Item\GroupItem.*.cs">
+      <DependentUpon>GroupItem.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Design\Shared\Table\Resources\Fixed\Pieces\Fixed.*.cs">
+      <DependentUpon>Fixed.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Design\Shared\Table\Resources\Fixed\Pieces\Piece\Piece.*.cs">
+      <DependentUpon>Piece.cs</DependentUpon>
+    </Compile>
 
+  </ItemGroup>
 
 </Project>

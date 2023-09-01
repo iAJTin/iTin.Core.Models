@@ -17,9 +17,11 @@ namespace iTin.Core.Models.Design.Table;
 /// <para><strong><u>Usage</u></strong>:</para>
 /// <code lang="xml" title="ITEE Object Element Usage">
 /// <![CDATA[
-/// <Fields>
-///   <Field/>|<Fixed/>|<Gap/>|<Group/>|<Packet/>
-/// </Fields>
+/// <Table ...>
+///   <Fields>
+///     <Field/>|<Fixed/>|<Gap/>|<Group/>|<Packet/>
+///   </Fields>
+/// </Table>
 /// ]]>
 /// </code>
 /// <para><strong><u>Elements</u></strong></para>
@@ -50,18 +52,21 @@ public partial class FieldsCollection
 {
     #region constructor/s
 
+    #region [public] FieldsCollection(TableDefinition): Initializes a new instance of the class with a parent instance
     /// <summary>
-    /// Initializes a new instance of the <see cref="FieldsCollection"/> class.
+    /// Initializes a new instance of the <see cref="FieldsCollection"/> class with a parent instance.
     /// </summary>
-    /// <param name="parent">The parent.</param>
+    /// <param name="parent">The parent <see cref="TableDefinition"/> instance.</param>
     public FieldsCollection(TableDefinition parent) : base(parent)
     {
     }
+    #endregion
 
     #endregion
 
     #region public methods
 
+    #region [public] (IEnumerable<BaseDataField>) GetRange(YesNo): Gets an enumerator to a list of fields that has visible headers
     /// <summary>
     /// Gets an enumerator to a list of fields that has visible headers.
     /// </summary>
@@ -70,9 +75,9 @@ public partial class FieldsCollection
     /// Enumerator that contains list of fields that has visible headers.
     /// </returns>
     /// <exception cref="InvalidEnumArgumentException">
-    /// <paramref name="visibleHeaders"/> is not part of the enumeration.
+    /// <paramref name="visibleHeaders"/> is not part of the enumeration.<br/>
     /// 
-    /// -or-
+    /// -or-<br/>
     /// 
     /// <paramref name="visibleHeaders"/> is not an enumerated type.
     /// </exception>
@@ -82,7 +87,9 @@ public partial class FieldsCollection
 
         return this.Where(field => field.Header.Show == YesNo.Yes).ToList();
     }
+    #endregion
 
+    #region [public] (IEnumerable<BaseDataField>) GetRange(KnownAggregateLocation): Gets an enumerator to a list of fields that meet the test of being added at the indicated position and this is visible
     /// <summary>
     /// Gets an enumerator to a list of fields that meet the test of being added at the indicated position and this is visible.
     /// </summary>
@@ -91,9 +98,9 @@ public partial class FieldsCollection
     /// Enumerator that contains list of fields that meet the condition and is visible.
     /// </returns>
     /// <exception cref="InvalidEnumArgumentException">
-    /// <paramref name="location"/> is not part of the enumeration.
+    /// <paramref name="location"/> is not part of the enumeration.<br/>
     /// 
-    /// -or-
+    /// -or-<br/>
     /// 
     /// <paramref name="location"/> is not an enumerated type.
     /// </exception>
@@ -103,7 +110,9 @@ public partial class FieldsCollection
 
         return this.Where(field => field.Aggregate.Show == YesNo.Yes && field.Aggregate.Location == location);
     }
+    #endregion
 
+    #region [public] (IEnumerable<BaseDataField>) GetRange(KnownFieldType): Returns an enumerator to a field list containing only those who meet the condition of type
     /// <summary>
     /// Returns an enumerator to a field list containing only those who meet the condition of type.
     /// </summary>
@@ -112,9 +121,9 @@ public partial class FieldsCollection
     /// Enumerator that contains list of fields that meet the condition.
     /// </returns>
     /// <exception cref="InvalidEnumArgumentException">
-    /// <paramref name="field"/> is not part of the enumeration.
+    /// <paramref name="field"/> is not part of the enumeration.<br/>
     /// 
-    /// -or-
+    /// -or-<br/>
     /// 
     /// <paramref name="field"/> is not an enumerated type.
     /// </exception>
@@ -124,18 +133,20 @@ public partial class FieldsCollection
 
         return this.Where(fld => fld.FieldType.Equals(field));
     }
+    #endregion
 
+    #region [public] (bool) HasVisibleAggregatesByLocation(KnownAggregateLocation): Gets a value indicating whether there is a field with a visible aggregate and at specified position
     /// <summary>
     /// Gets a value indicating whether there is a field with a visible aggregate and at specified position.
     /// </summary>
     /// <param name="location">Aggregate location</param>
     /// <returns>
-    ///  <strong>true</strong> if there is a field with a visible aggregate and at the specified location; otherwise, <strong>false</strong>.
+    /// <see langword="true"/> if there is a field with a visible aggregate and at the specified location; otherwise, <see langword="false"/>.
     /// </returns>
     /// <exception cref="InvalidEnumArgumentException">
-    /// <paramref name="location"/> is not part of the enumeration.
+    /// <paramref name="location"/> is not part of the enumeration.<br/>
     /// 
-    /// -or-
+    /// -or-<br/>
     /// 
     /// <paramref name="location"/> is not an enumerated type.
     /// </exception>
@@ -145,14 +156,17 @@ public partial class FieldsCollection
 
         return GetRange(location).Any();
     }
+    #endregion
 
+    #region [public] (bool) HasVisibleHeaders(): Gets a value indicating whether there are field with a visible header
     /// <summary>
     /// Gets a value indicating whether there are field with a visible header.
     /// </summary>
     /// <returns>
-    /// <strong>true</strong> if there are field with a visible header; otherwise, <strong>false</strong>.
+    /// <see langword="true"/> if there are field with a visible header; otherwise, <see langword="false"/>.
     /// </returns>
     public bool HasVisibleHeaders() => GetRange(YesNo.Yes).Any();
+    #endregion
 
     #endregion
 }

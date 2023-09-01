@@ -45,7 +45,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
 
     #region public readonly properties
 
-    /// <inheritdoc/>
     /// <summary>
     /// Gets the number of elements contained in the <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.
     /// </summary>
@@ -55,7 +54,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     [JsonIgnore]
     public int Count => List.Count;
 
-    /// <inheritdoc/>
     /// <summary>
     /// Gets a value indicating whether the <see cref="BaseSimpleModelCollection{TItem, TParent}"/> is read-only.
     /// </summary>
@@ -66,7 +64,7 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     public bool IsReadOnly => false;
 
     /// <summary>
-    /// Gets a reference to the owner of the collection
+    /// Gets a reference to the parent of the collection
     /// </summary>
     /// <value>
     /// Owner collection
@@ -79,13 +77,14 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
 
     #region public override properties
 
-    /// <inheritdoc />
     /// <summary>
     /// When overridden in a derived class, gets a value indicating whether this instance contains the default.
     /// </summary>
     /// <value>
     /// <b>true</b> if this instance contains the default; otherwise, <b>false</b>.
     /// </value>
+    [JsonIgnore]
+    [XmlIgnore]
     public override bool IsDefault => !this.Any();
 
     #endregion
@@ -105,7 +104,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
 
     #region public indexer
 
-    /// <inheritdoc />
     /// <summary>
     /// Gets or sets the element at the specified index.
     /// </summary>
@@ -128,7 +126,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
 
     #region public methods
 
-    /// <inheritdoc />
     /// <summary>
     /// Adds an object to the end of the <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.
     /// </summary>
@@ -140,13 +137,11 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
         List.Add(item);
     }
 
-    /// <inheritdoc />
     /// <summary>
     /// Removes all elements from the collection.
     /// </summary>
     public void Clear() => List.Clear();
 
-    /// <inheritdoc/>
     /// <summary>
     /// Determines whether an element is in the <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.
     /// </summary>
@@ -159,7 +154,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     /// </remarks>
     public bool Contains(TItem item) => List.Contains(item);
 
-    /// <inheritdoc/>
     /// <summary>
     /// Copies the entire <see cref="BaseSimpleModelCollection{TItem, TParent}"/> to a compatible one-dimensional array, starting at the specified index of the target array.
     /// </summary>
@@ -179,7 +173,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     /// </returns>
     public TItem Find(Predicate<TItem> match) => List.Find(match);
 
-    /// <inheritdoc/>
     /// <summary>
     /// Returns an enumerator that iterates through the <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.
     /// </summary>
@@ -188,7 +181,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     /// </returns>
     public IEnumerator<TItem> GetEnumerator() => List.GetEnumerator();
 
-    /// <inheritdoc/>
     /// <summary>
     /// Returns an enumerator that iterates through a collection.
     /// </summary>
@@ -197,7 +189,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     /// </returns>
     IEnumerator IEnumerable.GetEnumerator() => List.GetEnumerator();
 
-    /// <inheritdoc/>
     /// <summary>
     /// Searches for the specified object and returns the zero-based index of the first occurrence within the entire <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.
     /// </summary>
@@ -207,7 +198,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     /// </returns>
     public int IndexOf(TItem item) => List.IndexOf(item);
 
-    /// <inheritdoc/>
     /// <summary>
     /// Inserts an item to the <see cref="BaseSimpleModelCollection{TItem, TParent}"/> at the specified index.
     /// </summary>
@@ -216,7 +206,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0 - or - index is greater than <see cref="BaseSimpleModelCollection{TItem, TParent}.Count"/>.</exception>
     public void Insert(int index, TItem item) => List.Insert(index, item);
 
-    /// <inheritdoc/>
     /// <summary>
     /// Removes the first occurrence of a specific object from the <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.
     /// </summary>
@@ -226,7 +215,6 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     /// </returns>
     public bool Remove(TItem item) => List.Remove(item);
 
-    /// <inheritdoc/>
     /// <summary>
     /// Removes the element at the specified index of the <see cref="BaseSimpleModelCollection{TItem, TParent}"/>.
     /// </summary>
@@ -239,9 +227,13 @@ public abstract class BaseSimpleModelCollection<TItem, TParent> : BaseModel<Base
     #region protected abstract methods
 
     /// <summary>
-    /// Sets this collection as the owner of the specified item.
+    /// Sets the owner of the provided <paramref name="item"/>.
     /// </summary>
-    /// <param name="item">Target item to set owner.</param>
+    /// <param name="item">The item for which to set the owner.</param>
+    /// <remarks>
+    /// This method assigns an owner to the specified <paramref name="item"/>, establishing a parent-child relationship between them.<br/>
+    /// The implementation of this method should handle the logic to associate the owner with the item.
+    /// </remarks>
     protected abstract void SetOwner(TItem item);
 
     #endregion

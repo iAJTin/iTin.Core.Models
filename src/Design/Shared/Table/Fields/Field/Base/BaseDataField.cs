@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
+using Newtonsoft.Json;
+
 using iTin.Core.Helpers;
 using iTin.Core.Models.Design.Enums;
 
@@ -26,7 +28,7 @@ namespace iTin.Core.Models.Design.Table.Fields;
 ///     <description>Represents a data field.</description>
 ///   </item>
 ///   <item>
-///     <term><see cref="FixedField"/></term>
+///     <term><see cref="FixedField"/> (Packet field)</term>
 ///     <description>Represents a piece of a field fixed-width data.</description>
 ///   </item>
 ///   <item>
@@ -109,6 +111,8 @@ public partial class BaseDataField
     /// <value>
     /// One of the <see cref="KnownFieldType" /> values.
     /// </value>
+    [JsonIgnore]
+    [XmlIgnore]
     public abstract KnownFieldType FieldType { get; }
 
     #endregion
@@ -121,6 +125,7 @@ public partial class BaseDataField
     /// <value>
     /// The <see cref="FieldsCollection" /> that owns this data field.
     /// </value>
+    [JsonIgnore]
     [XmlIgnore]
     [Browsable(false)]
     public FieldsCollection Owner { get; private set; }
@@ -136,61 +141,47 @@ public partial class BaseDataField
     /// Visual setting of aggregate function of the data field.
     /// </value>
     /// <remarks>
+    /// <para><strong><u>Usage</u></strong>:</para>
     /// <code lang="xml" title="ITEE Object Element Usage">
-    /// &lt;Field|Fixed|Gap|Group ...&gt;
-    ///   &lt;Aggregate .../&gt;
+    /// <![CDATA[
+    /// <Field|Fixed|Gap|Group ...>
+    ///   <Aggregate .../>
     ///   ...
-    /// &lt;/Field|Fixed|Gap|Group&gt;
+    /// <Field|Fixed|Gap|Group>
+    /// ]]>
     /// </code>
-    /// <para>
-    /// <para><strong>Compatibility table with native writers.</strong></para>
-    /// <table>
-    ///   <thead>
-    ///     <tr>
-    ///       <th>Comma-Separated Values<br/><see cref="T:iTin.Export.Writers.CsvWriter" /></th>
-    ///       <th>Tab-Separated Values<br/><see cref="T:iTin.Export.Writers.TsvWriter" /></th>
-    ///       <th>SQL Script<br/><see cref="T:iTin.Export.Writers.SqlScriptWriter" /></th>
-    ///       <th>XML Spreadsheet 2003<br/><see cref="T:iTin.Export.Writers.Spreadsheet2003TabularWriter" /></th>
-    ///     </tr>
-    ///   </thead>
-    ///   <tbody>
-    ///     <tr>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">X</td>
-    ///     </tr>
-    ///   </tbody>
-    /// </table>
-    /// A <strong><c>X</c></strong> value indicates that the writer supports this element.
-    /// </para>
     /// </remarks>
     /// <example>
     /// In the following example shows how create a data field.
-    /// <code lang="xml">
-    ///   &lt;Field Name="##LINE" Alias="Line"&gt;
-    ///     &lt;Header Style="CommonHeader" Show="Yes"/&gt;
-    ///     &lt;Value Style="LineValue"/&gt;
-    ///     &lt;Aggregate Style="TopAggregate" Type="Count" Location="Top" Show="Yes"/&gt;
-    ///   &lt;/Field&gt;
+    /// <para><strong><u>Usage</u></strong>:</para>
+    /// <code lang="xml" title="ITEE Object Element Usage">
+    /// <![CDATA[
+    /// <Field Name="##LINE" Alias="Line">
+    ///     <Header Style="CommonHeader" Show="Yes"/>
+    ///     <Value Style="LineValue"/>
+    ///     <Aggregate Style="TopAggregate" Type="Count" Location="Top" Show="Yes"/>
+    /// </Field>
+    /// ]]>
     /// </code>
     /// <code lang="cs">
-    /// DataFieldModel lineField = new DataFieldModel
-    ///                            {
-    ///                                Name = "##LINE",
-    ///                                Alias = "Line",
-    ///                                Value = new FieldValueModel { Style = "LineValue" },
-    ///                                Header = new FieldHeaderModel { Style = "CommonHeader", Show = YesNo.Yes },
-    ///                                Aggregate = new FieldAggregateModel
-    ///                                {
-    ///                                    Show = YesNo.Yes,
-    ///                                    Style = "TopAggregate", 
-    ///                                    Location = KnownAggregateLocation.Top,
-    ///                                    AggregateType = KnownAggregateType.Count
-    ///                                }
-    ///                            };
+    /// DataField lineField = new DataField
+    /// {
+    ///     Name = "##LINE",
+    ///     Alias = "Line",
+    ///     Value = new FieldValue { Style = "LineValue" },
+    ///     Header = new FieldHeader { Style = "CommonHeader", Show = YesNo.Yes },
+    ///     Aggregate = new FieldAggregate
+    ///     {
+    ///         Show = YesNo.Yes,
+    ///         Style = "TopAggregate",
+    ///         Location = KnownAggregateLocation.Top,
+    ///         AggregateType = KnownAggregateType.Count
+    ///     }
+    /// };
     /// </code>
     /// </example>
+    [JsonProperty]
+    [XmlElement]
     public FieldAggregate Aggregate
     {
         get
@@ -210,67 +201,59 @@ public partial class BaseDataField
     /// The alias of data field. This value is used as the column header.
     /// </value>
     /// <remarks>
+    /// <para><strong><u>Usage</u></strong>:</para>
     /// <code lang="xml" title="ITEE Object Element Usage">
-    /// &lt;Field|Fixed|Gap|Group Alias="string" ...&gt;
-    ///   ...
-    /// &lt;/Field|Fixed|Gap|Group&gt;
+    /// <![CDATA[
+    /// <Field|Fixed|Gap|Group Alias="string" ...>
+    /// ...
+    /// </Field|Fixed|Gap|Group>
+    /// ]]>
     /// </code>
-    /// <para>
-    /// <para><strong>Compatibility table with native writers.</strong></para>
-    /// <table>
-    ///   <thead>
-    ///     <tr>
-    ///       <th>Comma-Separated Values<br/><see cref="T:iTin.Export.Writers.CsvWriter"/></th>
-    ///       <th>Tab-Separated Values<br/><see cref="T:iTin.Export.Writers.TsvWriter"/></th>
-    ///       <th>SQL Script<br/><see cref="T:iTin.Export.Writers.SqlScriptWriter"/></th>
-    ///       <th>XML Spreadsheet 2003<br/><see cref="T:iTin.Export.Writers.Spreadsheet2003TabularWriter"/></th>
-    ///     </tr>
-    ///   </thead>
-    ///   <tbody>
-    ///     <tr>
-    ///       <td align="center">X</td>
-    ///       <td align="center">X</td>
-    ///       <td align="center">X</td>
-    ///       <td align="center">X</td>
-    ///     </tr>
-    ///   </tbody>
-    /// </table>
-    /// A <strong><c>X</c></strong> value indicates that the writer supports this element.
-    /// </para>
     /// </remarks>
     /// <example>
-    /// <code lang="xml">
-    /// &lt;Field Name="##LINE" Alias="Line"&gt;
-    /// ...
-    /// &lt;/Field&gt;
+    /// In the following example shows how create a data field.
+    /// <para><strong><u>Usage</u></strong>:</para>
+    /// <code lang="xml" title="ITEE Object Element Usage">
+    /// <![CDATA[
+    /// <Field Name="##LINE" Alias="Line">
+    ///     <Header Style="CommonHeader" Show="Yes"/>
+    ///     <Value Style="LineValue"/>
+    ///     <Aggregate Style="TopAggregate" Type="Count" Location="Top" Show="Yes"/>
+    /// </Field>
+    /// ]]>
     /// </code>
     /// <code lang="cs">
-    /// DataFieldModel lineField = new DataFieldModel
-    ///                            {
-    ///                                Name = "##LINE",
-    ///                                Alias = "Line",
-    ///                                Value = new FieldValueModel { Style = "LineValue" },
-    ///                                Header = new FieldHeaderModel { Style = "CommonHeader", Show = YesNo.Yes },
-    ///                                Aggregate = new FieldAggregateModel
-    ///                                {
-    ///                                    Show = YesNo.Yes,
-    ///                                    Style = "TopAggregate", 
-    ///                                    Location = KnownAggregateLocation.Top,
-    ///                                    AggregateType = KnownAggregateType.Count,
-    ///                                }
-    ///                            };
+    /// DataField lineField = new DataField
+    /// {
+    ///     Name = "##LINE",
+    ///     Alias = "Line",
+    ///     Value = new FieldValue { Style = "LineValue" },
+    ///     Header = new FieldHeader { Style = "CommonHeader", Show = YesNo.Yes },
+    ///     Aggregate = new FieldAggregate
+    ///     {
+    ///         Show = YesNo.Yes,
+    ///         Style = "TopAggregate",
+    ///         Location = KnownAggregateLocation.Top,
+    ///         AggregateType = KnownAggregateType.Count
+    ///     }
+    /// };
     /// </code>
     /// </example>
+    [JsonProperty]
     [XmlAttribute]
     public string Alias { get; set; }
 
     /// <summary>
-    /// Gets or sets a reference for pieces data.
+    /// Gets or sets the <strong>XML</strong> data source for the field value.
     /// </summary>
     /// <value>
-    /// A <see cref="XElement"/> that contains the pieces data.
+    /// The <strong>XML</strong> data source element associated with the field value.
     /// </value>
-    /// <exception cref="InvalidOperationException">If not supported for this data field.</exception>
+    /// <remarks>
+    /// This property provides access to the <strong>XML</strong> data source element that holds the value associated with this field.
+    /// </remarks>
+    [JsonIgnore]
+    [XmlIgnore]
     public XElement DataSource
     {
         get => _dataSource;
@@ -290,43 +273,27 @@ public partial class BaseDataField
     /// Visual setting of header the data field.
     /// </value>
     /// <remarks>
+    /// <para><strong><u>Usage</u></strong>:</para>
     /// <code lang="xml" title="ITEE Object Element Usage">
-    /// &lt;Field|Fixed|Gap|Group ...&gt;
-    ///    &lt;Header .../&gt;
+    /// <![CDATA[
+    /// <Field|Fixed|Gap|Group ...>
+    ///    <Header .../>
     ///   ...
-    /// &lt;/Field|Fixed|Gap|Group&gt;
+    /// </Field|Fixed|Gap|Group>
+    /// ]]>
     /// </code>
-    /// <para>
-    /// <para><strong>Compatibility table with native writers.</strong></para>
-    /// <table>
-    ///   <thead>
-    ///     <tr>
-    ///       <th>Comma-Separated Values<br/><see cref="T:iTin.Export.Writers.CsvWriter"/></th>
-    ///       <th>Tab-Separated Values<br/><see cref="T:iTin.Export.Writers.TsvWriter"/></th>
-    ///       <th>SQL Script<br/><see cref="T:iTin.Export.Writers.SqlScriptWriter"/></th>
-    ///       <th>XML Spreadsheet 2003<br/><see cref="T:iTin.Export.Writers.Spreadsheet2003TabularWriter"/></th>
-    ///     </tr>
-    ///   </thead>
-    ///   <tbody>
-    ///     <tr>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">X</td>
-    ///     </tr>
-    ///   </tbody>
-    /// </table>
-    /// A <strong><c>X</c></strong> value indicates that the writer supports this element.
-    /// </para>
     /// </remarks>
     /// <example>
     /// In the following example shows how create a data field.
-    /// <code lang="xml">
-    ///   &lt;Field Name="##LINE" Alias="Line"&gt;
-    ///     &lt;Header Style="CommonHeader" Show="Yes"/&gt;
-    ///     &lt;Value Style="LineValue"/&gt;
-    ///     &lt;Aggregate Style="TopAggregate" Type="Count" Location="Top" Show="Yes"/&gt;
-    ///   &lt;/Field&gt;
+    /// <para><strong><u>Usage</u></strong>:</para>
+    /// <code lang="xml" title="ITEE Object Element Usage">
+    /// <![CDATA[
+    /// <Field Name="##LINE" Alias="Line">
+    ///     <Header Style="CommonHeader" Show="Yes"/>
+    ///     <Value Style="LineValue"/>
+    ///     <Aggregate Style="TopAggregate" Type="Count" Location="Top" Show="Yes"/>
+    /// </Field>
+    /// ]]>
     /// </code>
     /// <code lang="cs">
     /// DataField lineField = new DataField
@@ -338,13 +305,15 @@ public partial class BaseDataField
     ///     Aggregate = new FieldAggregate
     ///     {
     ///         Show = YesNo.Yes,
-    ///         Style = "TopAggregate", 
+    ///         Style = "TopAggregate",
     ///         Location = KnownAggregateLocation.Top,
     ///         AggregateType = KnownAggregateType.Count
     ///     }
     /// };
     /// </code>
     /// </example>
+    [JsonProperty]
+    [XmlElement]
     public FieldHeader Header
     {
         get
@@ -364,61 +333,47 @@ public partial class BaseDataField
     /// Visual setting of value the data field.
     /// </value>
     /// <remarks>
+    /// <para><strong><u>Usage</u></strong>:</para>
     /// <code lang="xml" title="ITEE Object Element Usage">
-    /// &lt;Field|Fixed|Gap|Group ...&gt;
-    ///   &lt;Value .../&gt;
+    /// <![CDATA[
+    /// <Field|Fixed|Gap|Group ...>
+    ///   <Value .../>
     ///   ...
-    /// &lt;/Field|Fixed|Gap|Group&gt;
+    /// </Field|Fixed|Gap|Group>
+    /// ]]>
     /// </code>
-    /// <para>
-    /// <para><strong>Compatibility table with native writers.</strong></para>
-    /// <table>
-    ///   <thead>
-    ///     <tr>
-    ///       <th>Comma-Separated Values<br/><see cref="T:iTin.Export.Writers.CsvWriter" /></th>
-    ///       <th>Tab-Separated Values<br/><see cref="T:iTin.Export.Writers.TsvWriter" /></th>
-    ///       <th>SQL Script<br/><see cref="T:iTin.Export.Writers.SqlScriptWriter" /></th>
-    ///       <th>XML Spreadsheet 2003<br/><see cref="T:iTin.Export.Writers.Spreadsheet2003TabularWriter" /></th>
-    ///     </tr>
-    ///   </thead>
-    ///   <tbody>
-    ///     <tr>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">X</td>
-    ///     </tr>
-    ///   </tbody>
-    /// </table>
-    /// A <strong><c>X</c></strong> value indicates that the writer supports this element.
-    /// </para>
     /// </remarks>
     /// <example>
     /// In the following example shows how create a data field.
+    /// <para><strong><u>Usage</u></strong>:</para>
     /// <code lang="xml" title="ITEE Object Element Usage">
-    ///   &lt;Field Name="##LINE" Alias="Line"&gt;
-    ///     &lt;Header Style="CommonHeader" Show="Yes"/&gt;
-    ///     &lt;Value Style="LineValue"/&gt;
-    ///     &lt;Aggregate Style="TopAggregate" Type="Count" Location="Top" Show="Yes"/&gt;
-    ///   &lt;/Field&gt;
+    /// <![CDATA[
+    /// <Field Name="##LINE" Alias="Line">
+    ///     <Header Style="CommonHeader" Show="Yes"/>
+    ///     <Value Style="LineValue"/>
+    ///     <Aggregate Style="TopAggregate" Type="Count" Location="Top" Show="Yes"/>
+    /// </Field>
+    /// ]]>
     /// </code>
     /// <code lang="cs">
-    /// DataFieldModel lineField = new DataFieldModel
-    ///                            {
-    ///                                Name = "##LINE",
-    ///                                Alias = "Line",
-    ///                                Value = new FieldValueModel { Style = "LineValue" },
-    ///                                Header = new FieldHeaderModel { Style = "CommonHeader", Show = YesNo.Yes },
-    ///                                Aggregate = new FieldAggregateModel
-    ///                                {
-    ///                                    Show = YesNo.Yes,
-    ///                                    Style = "TopAggregate", 
-    ///                                    Location = KnownAggregateLocation.Top,
-    ///                                    AggregateType = KnownAggregateType.Count
-    ///                                }
-    ///                            };
+    /// DataField lineField = new DataField
+    /// {
+    ///     Name = "##LINE",
+    ///     Alias = "Line",
+    ///     Value = new FieldValue { Style = "LineValue" },
+    ///     Header = new FieldHeader { Style = "CommonHeader", Show = YesNo.Yes },
+    ///     Aggregate = new FieldAggregate
+    ///     {
+    ///         Show = YesNo.Yes,
+    ///         Style = "TopAggregate",
+    ///         Location = KnownAggregateLocation.Top,
+    ///         AggregateType = KnownAggregateType.Count
+    ///     }
+    /// };
     /// </code>
     /// </example>
+    [JsonProperty]
+    [XmlElement]
     public FieldValue Value
     {
         get
@@ -438,59 +393,43 @@ public partial class BaseDataField
     /// A <see cref="string"/> that represents a size as multiply of 100 (ex. 9.3 => 930).
     /// </value>
     /// <remarks>
+    /// <para><strong><u>Usage</u></strong>:</para>
     /// <code lang="xml" title="ITEE Object Element Usage">
-    /// &lt;Field|Fixed|Gap|Group Width="Default|BestFit|A number as multiply of 100" ...&gt;
+    /// <![CDATA[
+    /// <Field|Fixed|Gap|Group Width="Default|BestFit|A number as multiply of 100" ...>
     ///   ...
-    /// &lt;/Field|Fixed|Gap|Group&gt;
+    /// </Field|Fixed|Gap|Group>
+    /// ]]>
     /// </code>
-    /// <para>
-    /// <para><strong>Compatibility table with native writers.</strong></para>
-    /// <table>
-    ///   <thead>
-    ///     <tr>
-    ///       <th>Comma-Separated Values<br/><see cref="T:iTin.Export.Writers.CsvWriter"/></th>
-    ///       <th>Tab-Separated Values<br/><see cref="T:iTin.Export.Writers.TsvWriter"/></th>
-    ///       <th>SQL Script<br/><see cref="T:iTin.Export.Writers.SqlScriptWriter"/></th>
-    ///       <th>XML Spreadsheet 2003<br/><see cref="T:iTin.Export.Writers.Spreadsheet2003TabularWriter"/></th>
-    ///     </tr>
-    ///   </thead>
-    ///   <tbody>
-    ///     <tr>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">No has effect</td>
-    ///       <td align="center">X</td>
-    ///     </tr>
-    ///   </tbody>
-    /// </table>
-    /// A <strong><c>X</c></strong> value indicates that the writer supports this element.
-    /// </para>
     /// </remarks>
     /// <example>
+    /// <para><strong><u>Usage</u></strong>:</para>
     /// <code lang="xml" title="ITEE Object Element Usage">
-    /// &lt;Field Name="##LINE" Alias="Line" Width="BestFit"&gt;
+    /// <![CDATA[
+    /// <Field Name="##LINE" Alias="Line" Width="BestFit">
     /// ...
-    /// &lt;/Field&gt;
+    /// </Field>
+    /// ]]>
     /// </code>
     /// <code lang="cs">
-    /// DataFieldModel lineField = new DataFieldModel
-    ///                            {
-    ///                                Name = "##LINE",
-    ///                                Alias = "Line",
-    ///                                Width = "BestFit",
-    ///                                Value = new FieldValueModel { Style = "LineValue" },
-    ///                                Header = new FieldHeaderModel { Style = "CommonHeader", Show = YesNo.Yes },
-    ///                                Aggregate = new FieldAggregateModel
-    ///                                {
-    ///                                    Show = YesNo.Yes,
-    ///                                    Style = "TopAggregate", 
-    ///                                    Location = KnownAggregateLocation.Top,
-    ///                                    AggregateType = KnownAggregateType.Count,
-    ///                                }
-    ///                            };
+    /// DataField lineField = new DataField
+    /// {
+    ///     Name = "##LINE",
+    ///     Alias = "Line",
+    ///     Value = new FieldValue { Style = "LineValue" },
+    ///     Header = new FieldHeader { Style = "CommonHeader", Show = YesNo.Yes },
+    ///     Aggregate = new FieldAggregate
+    ///     {
+    ///         Show = YesNo.Yes,
+    ///         Style = "TopAggregate",
+    ///         Location = KnownAggregateLocation.Top,
+    ///         AggregateType = KnownAggregateType.Count
+    ///     }
+    /// };
     /// </code>
     /// </example>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
+    [JsonProperty]
     [XmlAttribute]
     [DefaultValue(WidthDefault)]
     public string Width
@@ -514,6 +453,8 @@ public partial class BaseDataField
     /// <value>
     /// <strong>true</strong> if the data field supports data; otherwise, <strong>false</strong>.
     /// </value>
+    [JsonIgnore]
+    [XmlIgnore]
     protected virtual bool CanSetData => true;
 
     #endregion
@@ -524,7 +465,7 @@ public partial class BaseDataField
     /// Calculates field width from Width property measured in points.
     /// </summary>
     /// <returns>
-    /// A <see cref="T:System.Double"/> value thats contains the field width measured in points
+    /// A <see cref="double"/> value thats contains the field width measured in points
     /// </returns>
     public double CalculateWidthValue()
     {

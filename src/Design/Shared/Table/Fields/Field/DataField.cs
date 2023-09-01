@@ -7,6 +7,8 @@ using iTin.Core.Helpers;
 using iTin.Core.Models.ComponentModel.Exceptions;
 using iTin.Core.Models.Helpers;
 
+using Newtonsoft.Json;
+
 using ModelsRegularExpressionHelper = iTin.Core.Models.Helpers.RegularExpressionHelper;
 
 namespace iTin.Core.Models.Design.Table.Fields;
@@ -113,6 +115,7 @@ public partial class DataField
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     /// <exception cref="InvalidFieldIdentifierNameException"><paramref name="value" /> is not a valid field identifier name.</exception>
+    [JsonProperty]
     [XmlAttribute]
     public string Name
     {
@@ -129,7 +132,7 @@ public partial class DataField
                     new InvalidFieldIdentifierNameException(
                         ErrorMessageHelper.FieldIdentifierNameErrorMessage(
                             "Field",
-                            "Name", 
+                            nameof(Name), 
                             value)));                        
             }
                 

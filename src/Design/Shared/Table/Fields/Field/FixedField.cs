@@ -7,6 +7,8 @@ using iTin.Core.Helpers;
 using iTin.Core.Models.ComponentModel.Exceptions;
 using iTin.Core.Models.Helpers;
 
+using Newtonsoft.Json;
+
 using ModelsRegularExpressionHelper = iTin.Core.Models.Helpers.RegularExpressionHelper;
 
 namespace iTin.Core.Models.Design.Table.Fields;
@@ -107,6 +109,7 @@ public partial class FixedField
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     /// <exception cref="InvalidIdentifierNameException"><paramref name="value" /> not is a valid identifier name.</exception>
+    [JsonProperty]
     [XmlAttribute]
     public string Pieces
     {
@@ -120,7 +123,7 @@ public partial class FixedField
                 new InvalidIdentifierNameException(
                     ErrorMessageHelper.ModelIdentifierNameErrorMessage(
                         "Fixed", 
-                        "Pieces", 
+                        nameof(Pieces), 
                         value)));
 
             _pieces = value;
@@ -146,6 +149,7 @@ public partial class FixedField
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     /// <exception cref="InvalidIdentifierNameException"><paramref name="value" /> not is a valid identifier name.</exception>
+    [JsonProperty]
     [XmlAttribute]
     public string Piece
     {
@@ -158,8 +162,8 @@ public partial class FixedField
                 ModelsRegularExpressionHelper.IsValidIdentifier(value),
                 new InvalidIdentifierNameException(
                     ErrorMessageHelper.ModelIdentifierNameErrorMessage(
-                        "Fixed", 
-                        "Piece", 
+                        "Fixed",
+                        nameof(Piece),
                         value)));
 
             _piece = value;

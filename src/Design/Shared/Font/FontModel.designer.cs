@@ -4,13 +4,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml.Serialization;
 
-namespace iTin.Core.Models.Design
+namespace iTin.Core.Models.Design;
+
+[Serializable]
+[DebuggerStepThrough]
+[DesignerCategory("code")]
+[XmlType(Namespace = "http://schemas.itin.com/models/core/v1.0")]
+public partial class FontModel : BaseModel<FontModel>
 {
-    [Serializable]
-    [DebuggerStepThrough]
-    [DesignerCategory("code")]
-    [XmlType(Namespace = "http://schemas.iTin.com/charting/chart/v1.0")]
-    public partial class FontModel : BaseModel<FontModel>
-    {
-    }
 }

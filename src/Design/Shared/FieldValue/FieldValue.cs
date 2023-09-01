@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
@@ -12,8 +11,11 @@ using iTin.Core.Helpers;
 
 using iTin.Core.Models.ComponentModel.Exceptions;
 using iTin.Core.Models.Data.Provider;
+using iTin.Core.Models.Design.ComponentModel;
 using iTin.Core.Models.Design.Constants;
 using iTin.Core.Models.Design.Enums;
+using iTin.Core.Models.Design.Styles;
+using iTin.Core.Models.Design.Table;
 using iTin.Core.Models.Design.Table.Fields;
 using iTin.Core.Models.Helpers;
 
@@ -150,7 +152,7 @@ public partial class FieldValue
     /// Gets or sets one of the styles defined in the element styles.
     /// </summary>
     /// <value>
-    /// Name of a style defined in the list of styles. The default is "<c>Default</c>".
+    /// Name of a style defined in the list of styles. The default is "<strong>Default</strong>".
     /// Are only allow strings made ​​up of letters, numbers and following special chars <strong>'<c>_ - # @ % $</c>'</strong>.
     /// </value>
     /// <remarks>
@@ -163,7 +165,7 @@ public partial class FieldValue
     /// ]]>
     /// </code>
     /// </remarks>
-    /// <exception cref="ArgumentNullException">If <paramref name="value" /> is <strong>null</strong>.</exception>
+    /// <exception cref="ArgumentNullException">If <paramref name="value" /> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidIdentifierNameException"><paramref name="value" /> is not a valid identifier name.</exception>
     [XmlAttribute]
     [DefaultValue(DefaultStyle)]
@@ -181,8 +183,8 @@ public partial class FieldValue
                     ModelsRegularExpressionHelper.IsValidIdentifier(value), 
                     new InvalidIdentifierNameException(
                         ErrorMessageHelper.ModelIdentifierNameErrorMessage(
-                            "FieldValue", 
-                            "Style", 
+                            nameof(FieldValue), 
+                            nameof(Style),
                             value)));
             }
 
@@ -195,16 +197,17 @@ public partial class FieldValue
     #region public methods
 
     /// <summary>
-    /// Gets the value.
+    /// Gets the value of the field considering styles and data source.
     /// </summary>
-    /// <param name="specialChars">The special chars.</param>
+    /// <param name="specialChars">Optional special characters for parsing.</param>
     /// <returns>
-    /// The value
+    /// The formatted value of the field.
     /// </returns>
-    public string GetRawValue(IEnumerable<char> specialChars = null)
+    public string GetValue(IEnumerable<char> specialChars = null)
     {
+        var valueInformation = FieldValueInformation.Default;
         var unformattedValue = string.Empty;
-
+        
         var specialCharsList = new List<char>();
         if (specialChars != null)
         {
@@ -215,6 +218,14 @@ public partial class FieldValue
         {
             return unformattedValue;
         }
+
+        var found = Parent.Value.TryGetStyle(out var style);
+        if (!found)
+        {
+            style = BaseStyle.Default;
+        }
+
+        valueInformation.Style = style;
 
         if (Parent.DataSource == null)
         {
@@ -249,69 +260,76 @@ public partial class FieldValue
                 break;
             #endregion
 
+            #region Field: Gap
+            case KnownFieldType.Gap:
+                break;
+            #endregion
+
             #region Field: Fixed
-            //case KnownFieldType.Fixed:
-            //    {
-            //        var current = (FixedField)Parent;
+            case KnownFieldType.Fixed:
+                {
+                    var current = (FixedField)Parent;
 
-            //        var @fixed = Parent.Owner.Parent.Parent.Resources.Fixed;
-            //        var fixedItem = @fixed[current.Pieces];
-            //        fixedItem.DataSource = Parent.DataSource;
+                    var resources = (Resources)Parent.Owner.Parent.Resources;
+                    var @fixed = resources.Fixed;
+                    var fixedItem = @fixed[current.Pieces];
+                    fixedItem.DataSource = Parent.DataSource;
 
-            //        var parsedName = current.Piece; //BaseProvider.Parse(current.Piece, specialCharsList);
-            //        var piece = fixedItem.Pieces[parsedName];
-            //        unformattedValue = piece.GetValue();
-            //    }
+                    var parsedName = BaseDataProvider.Parse(current.Piece, specialCharsList);
+                    var piece = fixedItem.Pieces.FirstOrDefault(piece => piece.Name == parsedName);
+                    unformattedValue = piece?.GetValue();
+                }
 
                 break;
             #endregion
 
             #region Field: Group
-            //case KnownFieldType.Group:
-            //    {
-            //        var current = (GroupField)Parent;
-            //        var currentName = current.Name;
+            case KnownFieldType.Group:
+                {
+                    var current = (GroupField)Parent;
+                    var currentName = current.Name;
 
-            //        var @fixed = Parent.Owner.Parent.Parent.Owner.Resources.Fixed;
-            //        var groups = Parent.Owner.Parent.Parent.Owner.Resources.Groups;
-            //        var groupValue = string.Empty;
-            //        var builder = new StringBuilder();
+                    var resources = (Resources)Parent.Owner.Parent.Resources;
+                    var @fixed = resources.Fixed;
+                    var groups = resources.Groups;
+                    var groupValue = string.Empty;
+                    var builder = new StringBuilder();
 
-            //        var group = groups[currentName];
-            //        var groupFields = group.Fields;
-            //        foreach (var groupField in groupFields)
-            //        {
-            //            var parsedName = groupField.Name; //BaseProvider.Parse(groupField.Name, specialCharsList);
-            //            var asAttribute = Parent.DataSource.Attribute(parsedName);
-            //            if (asAttribute == null)
-            //            {
-            //                foreach (var fixedwidth in @fixed)
-            //                {
-            //                    fixedwidth.DataSource = Parent.DataSource;
+                    var group = groups[currentName];
+                    var groupFields = group.Fields;
+                    foreach (var groupField in groupFields)
+                    {
+                        var parsedName = BaseDataProvider.Parse(groupField.Name, specialCharsList);
+                        var asAttribute = Parent.DataSource.Attribute(parsedName);
+                        if (asAttribute == null)
+                        {
+                            foreach (var fixedwidth in @fixed)
+                            {
+                                fixedwidth.DataSource = Parent.DataSource;
 
-            //                    var piece = fixedwidth.Pieces[groupField.Name];
-            //                    if (piece == null)
-            //                    {
-            //                        continue;
-            //                    }
+                                var piece = fixedwidth.Pieces.FirstOrDefault(piece => piece.Name == groupField.Name);
+                                if (piece == null)
+                                {
+                                    continue;
+                                }
 
-            //                    groupValue = piece.GetValue();
-            //                }
-            //            }
-            //            else
-            //            {
-            //                groupField.DataSource = Parent.DataSource;
-            //                groupValue = groupField.GetValue(); //asAttribute.Value;
-            //            }
+                                groupValue = piece.GetValue();
+                            }
+                        }
+                        else
+                        {
+                            groupField.DataSource = Parent.DataSource;
+                            groupValue = groupField.GetValue(); //asAttribute.Value;
+                        }
 
-            //            builder.Append(groupValue);
-            //            builder.Append(GroupField.GetSeparatorChar(groupField.Separator));
-            //        }
+                        builder.Append(groupValue);
+                        builder.Append(GroupField.GetSeparatorChar(groupField.Separator));
+                    }
 
-            //        unformattedValue = builder.ToString();
-            //    }
+                    unformattedValue = builder.ToString();
+                }
 
-            //    break;
+                break;
             #endregion
 
             #region Field: Packet
@@ -399,6 +417,28 @@ public partial class FieldValue
         return unformattedValue;
     }
 
+    /// <summary>
+    /// Gets a reference to the <see cref="IStyle"/> from resources.
+    /// </summary>
+    /// <param name="style">A <see cref="IStyle"/> resource.</param>
+    /// <returns>
+    /// <see langword="true"/> if returns the style from resource; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool TryGetStyle(out IStyle style)
+    {
+        style = BaseStyle.Empty;
+
+        var found = TryGetResourceInformation(out var resource);
+        if (!found)
+        {
+            return false;
+        }
+
+        style = resource;
+
+        return true;
+    }
+
     #endregion
 
     #region internal methods
@@ -414,43 +454,42 @@ public partial class FieldValue
 
     #endregion
 
+    #region private methods
+
     /// <summary>
-    /// Parse an <see cref="T:System.String" /> and replace the special chars defined in <paramref name="specialChars"/> by a hexadecimal pattern.
+    /// Gets a reference to the image resource information.
     /// </summary>
-    /// <param name="value"><see cref="T:System.String" /> to parse</param>
-    /// <param name="specialChars">Special chars to replace</param>
+    /// <param name="resource">Resource information.</param>
     /// <returns>
-    /// The parsed string.
+    /// <see langword="true"/> if exist available information about resource; otherwise, <strong>false</strong>.
     /// </returns>
-    /// <remarks>
-    /// Analyzes the argument <paramref name="value"/>, replacing <paramref name="specialChars"/> by the pattern '_x####_', where:
-    /// ####: Represents ASCII char code in Hexadecimal format
-    /// If the argument <paramref name="value"/> does not contain any special characters returns the argument unchanged.
-    /// </remarks>
-    public static string ParseFieldName(string value, IEnumerable<char> specialChars)
+    private bool TryGetResourceInformation(out IStyle resource)
     {
-        SentinelHelper.ArgumentNull(value, nameof(value));
+        bool result;
 
-        if (specialChars == null)
+        resource = BaseStyle.Empty;
+        if (string.IsNullOrEmpty(Style))
         {
-            return value;
+            return false;
         }
 
-        var parsedField = value;
-        var chars = specialChars.ToList();
-        foreach (var specialchar in chars)
+        try
         {
-            if (!value.StartsWith(specialchar.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal))
-            {
-                continue;
-            }
+            var field = Parent;
+            var fields = field.Owner;
+            var table = fields.Parent;
+            var resources = (Resources)table.Resources;
+            resource = resources.GetStyleResourceByName(Style);
 
-            var charAsString = specialchar.ToString(CultureInfo.InvariantCulture);
-            var asciicode = Encoding.ASCII.GetBytes(charAsString)[0];
-            var cleanedfield = value.Replace(charAsString, string.Empty);
-            parsedField = $"_x{asciicode.ToString("x4", CultureInfo.InvariantCulture).ToUpper(CultureInfo.InvariantCulture)}_{cleanedfield}";
+            result = resource != null;
+        }
+        catch
+        {
+            result = false;
         }
 
-        return parsedField;
+        return result;
     }
+
+    #endregion
 }
