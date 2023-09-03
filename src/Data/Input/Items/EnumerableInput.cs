@@ -24,4 +24,24 @@ public class EnumerableInput<T> : DataTableInput where T : class
         : base(SentinelHelper.PassThroughNonNull(data.ToDataTable<T>(name)))
     {
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EnumerableInput{T}"/> class.
+    /// </summary>
+    /// <param name="data">A <see cref="DataRow"/> array object than contains the information.</param>
+    /// <param name="name">The name.</param>
+    public EnumerableInput(IList<T> data, string name)
+        : base(SentinelHelper.PassThroughNonNull(data.ToDataTable<T>(name)))
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EnumerableInput{T}"/> class.
+    /// </summary>
+    /// <param name="data">A <see cref="DataRow"/> array object than contains the information.</param>
+    /// <param name="name">The name.</param>
+    public EnumerableInput(ICollection<T> data, string name)
+        : base(SentinelHelper.PassThroughNonNull(data.ToDataTable<T>(name)))
+    {
+    }
 }

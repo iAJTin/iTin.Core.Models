@@ -13,7 +13,7 @@ using System.Xml.Linq;
 using iTin.Core.Helpers;
 using iTin.Core.Models.Data.Input;
 
-using iTinIO = iTin.Core.IO;
+using iTinFile = iTin.Core.IO.File;
 
 namespace iTin.Core.Models.Data.Provider;
 
@@ -57,7 +57,7 @@ public abstract class BaseDataProvider : IDataProvider
     protected BaseDataProvider()
     {
         SpecialChars = EmptySpecialCharsArray;
-        InputUri = iTinIO.File.GetUniqueTempRandomFile();
+        InputUri = iTinFile.GetUniqueTempRandomFile();
     }
 
     #endregion

@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 namespace iTin.Core.Models.Design;
 
 [Serializable]
-[DebuggerStepThrough]
+//[DebuggerStepThrough]
 [DesignerCategory("code")]
 [GeneratedCode("System.Xml", "4.0.30319.18033")]
 [XmlType(Namespace = "http://schemas.itin.com/models/core/v1.0")]

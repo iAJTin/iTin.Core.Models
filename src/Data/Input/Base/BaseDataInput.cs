@@ -1,5 +1,8 @@
 ﻿
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 using iTin.Core.Models.Data.Provider;
@@ -20,32 +23,32 @@ namespace iTin.Core.Models.Data.Input;
 ///       <description>Description</description>
 ///     </listheader>
 ///     <item>
-///       <term><see cref="T:iTin.Export.Inputs.ArraListInput" /></term>
-///       <description>Represents an input for array of <see cref="T:System.Collections.ArrayList" /> types. For more information please see <see cref="T:iTin.Export.Inputs.ArraListInput" /></description>
+///       <term><see cref="ArrayListInput{TData}"/></term>
+///       <description>Represents an input for array of <see cref="ArrayList"/> types. For more information please see <see cref="ArrayListInput{TData}" /></description>
 ///     </item>
 ///     <item>
-///       <term><see cref="T:iTin.Export.Inputs.DataRowInput" /></term>
-///       <description>Represents an input for array of <see cref="T:System.Data.DataRow" /> types. For more information please see <see cref="T:iTin.Export.Inputs.DataRowInput" /></description>
+///       <term><see cref="DataRowInput"/></term>
+///       <description>Represents an input for array of <see cref="DataRow"/> types. For more information please see <see cref="DataRowInput" /></description>
 ///     </item>
 ///     <item>
-///       <term><see cref="T:iTin.Export.Inputs.DataSetInput" /></term>
-///       <description>Represents an input for <see cref="T:System.Data.DataSet" /> types. For more information please see <see cref="T:iTin.Export.Inputs.DataSetInput" /></description>
+///       <term><see cref="DataSetInput"/></term>
+///       <description>Represents an input for <see cref="DataSet"/> types. For more information please see <see cref="DataSetInput" /></description>
 ///     </item>
 ///     <item>
-///       <term><see cref="T:iTin.Export.Inputs.DataTableInput" /></term>
-///       <description>Represents an input for <see cref="T:System.Data.DataTable" /> types. For more information please see <see cref="T:iTin.Export.Inputs.DataTableInput" /></description>
+///       <term><see cref="DataTableInput"/></term>
+///       <description>Represents an input for <see cref="DataTable"/> types. For more information please see <see cref="DataTableInput" /></description>
 ///     </item>
 ///     <item>
-///       <term><see cref="T:iTin.Export.Inputs.EnumerableInput" /></term>
-///       <description>Represents an input for <see cref="T:System.Collections.Generic.IEnumerable{DataRow}" /> types. For more information please see <see cref="T:iTin.Export.Inputs.EnumerableInput" /></description>
+///       <term><see cref="EnumerableInput{TData}"/></term>
+///       <description>Represents an input for <see cref="IEnumerable{TData}"/> types. For more information please see <see cref="EnumerableInput{TData}" /></description>
 ///     </item>
 ///     <item>
-///       <term><see cref="T:iTin.Export.Inputs.XmlInput" /></term>
-///       <description>Represents an input for <c>Xml</c> type. For more information please see <see cref="T:iTin.Export.Inputs.XmlInput" /></description>
+///       <term><see cref="XmlInput"/></term>
+///       <description>Represents an input for <c>XML</c> type. For more information please see <see cref="XmlInput"/></description>
 ///     </item>
 ///     <item>
-///       <term><see cref="T:iTin.Export.Inputs.JsonInput" /></term>
-///       <description>Represents an input for <c>Json</c> type. For more information please see <see cref="T:iTin.Export.Inputs.JsonInput" /></description>
+///       <term><see cref="JsonInput"/></term>
+///       <description>Represents an input for <c>Json</c> type. For more information please see <see cref="JsonInput"/></description>
 ///     </item>
 ///   </list>
 /// </remarks>
@@ -62,6 +65,17 @@ public abstract class BaseDataInput : IDataInput
         Data = data;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BaseDataInput" /> class.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="configuration"></param>
+    protected BaseDataInput(object data, DataInputConfiguration configuration)
+    {
+        Data = data;
+        Configuration = configuration;
+    }
+
     #endregion
 
     #region public properties
@@ -72,12 +86,13 @@ public abstract class BaseDataInput : IDataInput
     /// <value>
     /// A <see cref="T:System.Object" /> that contains the input data to export.
     /// </value>
-    public object Data
-    {
-        get; protected set;
-    }
+    public object Data { get; protected set; }
+
+    public DataInputConfiguration Configuration { get; protected set; }
 
     #endregion
+
+    #region public methods
 
     /// <summary>
     /// 
@@ -90,8 +105,15 @@ public abstract class BaseDataInput : IDataInput
         var inputOptionAttribute = (DataInputOptionsAttribute)attributes.SingleOrDefault(attr => attr is DataInputOptionsAttribute);
 
         var dataProvider = inputOptionAttribute!.AdapterType;
-        var dataProviderInstance = Activator.CreateInstance(dataProvider, args: new[] { Data });
+
+        var dataProviderInstance = Activator.CreateInstance(
+            dataProvider, 
+            dataProvider == typeof(JsonProvider) 
+                ? new[] { Data, new DataProviderConfiguration { InputNodes = Configuration.InputNodes, OutputTable = Configuration.OutputTable} }
+                : new[] { Data });
 
         return (IDataProvider)dataProviderInstance;
     }
+
+    #endregion
 }

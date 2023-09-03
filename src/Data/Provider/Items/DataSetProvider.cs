@@ -9,8 +9,8 @@ using iTin.Core.IO;
 namespace iTin.Core.Models.Data.Provider;
 
 /// <summary>
-/// A Specialization of <see cref="BaseDataProvider" /><br/>
-/// Represents a source object based on the <see cref="DataSet" />.
+/// A Specialization of <see cref="BaseDataProvider"/><br/>
+/// Represents a source object based on the <see cref="DataSet"/>.
 /// </summary>
 public class DataSetProvider : BaseDataProvider
 {
@@ -37,10 +37,10 @@ public class DataSetProvider : BaseDataProvider
     #region public override readonly properties
 
     /// <summary>
-    /// Gets a value indicating whether you can create an <strong>Xml</strong> file from the current instance of the object.
+    /// Gets a value indicating whether you can create an <strong>XML</strong> file from the current instance of the object.
     /// </summary>
     /// <value>
-    /// Always returns <strong>true</strong>.
+    /// Always returns <see langword="true"/>.
     /// </value>
     public override bool CanCreateInputXml => true;
 
@@ -48,7 +48,7 @@ public class DataSetProvider : BaseDataProvider
     /// Gets a value indicating whether this instance can get data table.
     /// </summary>
     /// <value>
-    /// Always returns <strong>true</strong>.
+    /// Always returns <see langword="true"/>.
     /// </value>
     public override bool CanGetDataTable => true;
 
