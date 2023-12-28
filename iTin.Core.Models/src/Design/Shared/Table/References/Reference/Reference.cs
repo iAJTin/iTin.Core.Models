@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml.Serialization;
@@ -91,7 +92,7 @@ public partial class Reference
     /// ]]>
     /// </code>
     /// </remarks>
-    /// <exception cref=ArgumentNullException">If <paramref name="value" /> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">If <paramref name="value" /> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidPathNameException">If <paramref name="value" /> is an invalid path name.</exception>
     [JsonProperty]
     [XmlAttribute]
